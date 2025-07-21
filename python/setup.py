@@ -440,12 +440,13 @@ def build_rocshmem(cap):
 def build_shmem():
     try:
         import torch
+        build_nvshmem(torch.cuda.get_device_capability())
 
-        if torch.cuda.is_available():
-            if torch.version.hip is None:
-                build_nvshmem(torch.cuda.get_device_capability())
-            else:
-                build_rocshmem(torch.cuda.get_device_capability())  # (9, 4)
+        # if torch.cuda.is_available():
+        #     if torch.version.hip is None:
+        #         build_nvshmem(torch.cuda.get_device_capability())
+        #     else:
+        #         build_rocshmem(torch.cuda.get_device_capability())  # (9, 4)
     except Exception as e:
         print("Cannot import torch.")
         raise e
@@ -612,12 +613,12 @@ class CMakeBuild(TorchBuildExtension):
         if check_env_flag("TRITON_BUILD_DISTRIBUTED", "ON"):
             try:
                 import torch
-                if torch.cuda.is_available():
-                    if torch.version.hip is None:
-                        cmake_args += ["-DTRITON_BUILD_PYNVSHMEM=ON"]
-                        nvshmem_dir = os.path.join(get_base_dir(), "3rdparty", "nvshmem")
-                        nvshmem_dir = os.getenv("NVSHMEM_SRC", nvshmem_dir)
-                        env["NVSHMEM_DIR"] = os.path.join(nvshmem_dir, "build", "install")
+                # if torch.cuda.is_available():
+                #     if torch.version.hip is None:
+                cmake_args += ["-DTRITON_BUILD_PYNVSHMEM=ON"]
+                nvshmem_dir = os.path.join(get_base_dir(), "3rdparty", "nvshmem")
+                nvshmem_dir = os.getenv("NVSHMEM_SRC", nvshmem_dir)
+                env["NVSHMEM_DIR"] = os.path.join(nvshmem_dir, "build", "install")
             except Exception:
                 print("Cannot import torch.")
                 pass
@@ -780,11 +781,12 @@ def add_links():
         try:
             import torch
 
-            if torch.cuda.is_available():
-                if torch.version.hip is None:
-                    add_link_to_pynvshmem()
-                else:
-                    pass
+            # if torch.cuda.is_available():
+            add_link_to_pynvshmem()
+                # if torch.version.hip is None:
+                #     add_link_to_pynvshmem()
+                # else:
+                #     pass
         except Exception:
             print("Cannot import torch.")
             pass
@@ -874,13 +876,15 @@ def get_packages():
         ]
         try:
             import torch
+            packages += ["triton_dist/pynvshmem"]
+            packages += ["triton_dist/_C/_pynvshmem"]
 
-            if torch.cuda.is_available():
-                if torch.version.hip is None:
-                    packages += ["triton_dist/pynvshmem"]
-                    packages += ["triton_dist/_C/_pynvshmem"]
-                else:
-                    pass
+            # if torch.cuda.is_available():
+            #     if torch.version.hip is None:
+            #         packages += ["triton_dist/pynvshmem"]
+            #         packages += ["triton_dist/_C/_pynvshmem"]
+            #     else:
+            #         pass
         except Exception:
             print("Cannot import torch.")
             pass
